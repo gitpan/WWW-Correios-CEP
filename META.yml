@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               WWW-Correios-CEP
-version:            0.01
+version:            0.02
 abstract:           Perl extension for extract address from CEP (zip code) number
 author:
     - rentocron <rentocron@cpan.org>
@@ -11,8 +11,9 @@ configure_requires:
 build_requires:
     ExtUtils::MakeMaker:  0
 requires:
-    HTML::TreeBuilder::XPath:  ~
-    LWP:                  LWP::UserAgent
+    HTML::TreeBuilder::XPath:  0.01
+    LWP:                  0.01
+    LWP::UserAgent:       0.01
 no_index:
     directory:
         - t

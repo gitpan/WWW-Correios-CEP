@@ -5,11 +5,11 @@ use strict;
 use warnings;
 
 use LWP::UserAgent;
-use HTML::TreeBuilder::XPath ;
+use HTML::TreeBuilder::XPath;
 use Encode;
 use utf8;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 #-------------------------------------------------------------------------------
@@ -21,10 +21,14 @@ sub new {
 
 	my $this  = {
 		_tests => [
-			{ street => 'Rua Realidade dos Nordestinos', neighborhood => 'Cidade Nova Heliópolis', location => 'São Paulo'     , uf => 'SP', cep => '04236-000' , status => ''},
-			{ street => 'Rua Rio Piracicaba'           , neighborhood => 'I.A.P.I.'              , location => 'Osasco'        , uf => 'SP', cep => '06236-040' , status => ''},
-			{ street => 'Rua Hugo Baldessarini'        , neighborhood => 'Vista Alegre'          , location => 'Rio de Janeiro', uf => 'RJ', cep => '21236-040' , status => ''},
-			{ street => 'Avenida Urucará'              , neighborhood => 'Cachoeirinha'          , location => 'Manaus'        , uf => 'AM', cep => '69065-180' , status => ''}
+			{ street => 'Rua Realidade dos Nordestinos', neighborhood => 'Cidade Nova Heliópolis',
+				location => 'São Paulo'     , uf => 'SP', cep => '04236-000' , status => ''},
+			{ street => 'Rua Rio Piracicaba'           , neighborhood => 'I.A.P.I.'              , 
+				location => 'Osasco'        , uf => 'SP', cep => '06236-040' , status => ''},
+			{ street => 'Rua Hugo Baldessarini'        , neighborhood => 'Vista Alegre'          , 
+				location => 'Rio de Janeiro', uf => 'RJ', cep => '21236-040' , status => ''},
+			{ street => 'Avenida Urucará'              , neighborhood => 'Cachoeirinha'          ,
+				location => 'Manaus'        , uf => 'AM', cep => '69065-180' , status => ''}
 		],
 		_require_tests => 1,
 		_tests_status  => undef,
@@ -76,20 +80,23 @@ sub find {
 	$this->tests() if ($this->{_require_tests} && !defined $this->{_tests_status});
 
 	die("Tests FAIL") if (!$this->{_pass_test} && $this->{_require_tests});
-	
-	return $this->_extractAddress($cep);
+
+	my @list_address = $this->_extractAddress($cep);
+	$list_address[0]{address_count} = @list_address unless wantarray;
+
+	return wantarray ? @list_address : $list_address[0];
 }
 
 sub _extractAddress {
 	my ($this, $cep) = @_;
 
-	my $result = {};
+	my @result = ();
 
 	$cep =~ s/[^\d]//go;
 	$cep = sprintf('%08d', $cep);
 	
 	if ($cep =~ /^00/o || $cep =~ /(\d)\1{7}/){
-		$result->{status} = "Error: Invalid CEP number ($cep)";
+		$result[0]->{status} = "Error: Invalid CEP number ($cep)";
 	}else{
 	
 		if(!defined $this->{_lwp_ua}){
@@ -109,62 +116,54 @@ sub _extractAddress {
 		# Check the outcome of the response
 		if ($res->is_success) {
 
-			$this->_parseHTML($result, $res->content);
-			
-			# $result->{status} = $res->content;
+			$this->_parseHTML(\@result, $res->content);
+
 		}
 		else {
-			$result->{status} = "Error: " . $res->status_line;
+			$result[0]->{status} = "Error: " . $res->status_line;
 		}
 
 	}
 	
-	return $result;
+	return wantarray ? @result : $result[0];
 }
 
+
 sub _parseHTML {
-	my ($this, $address, $html) = @_; 
+	my ($this, $address_ref, $html) = @_;
 
-	# WOOOW, $html IS NOT HTML, ITS A INSANE TEXT
-	# pqp, isso não é HTML nem aqui nem na china!	
+	my $tree = HTML::TreeBuilder::XPath->new;
 
-	# POG MODE=ON
-	my $serach = quotemeta("<?xml version = '1.0' encoding = 'ISO-8859-1'?>");
+	$html = decode("iso-8859-1", $html) if ($html =~ /iso-8859-1/io);
 
-	$html =~ s/\n/ /g;
+	$tree->parse_content( $html );
 
-	my ($string) = $html =~ m/$serach(.+\d{5}\-\d{3}\<\/td\>\s*\<\/tr\>\s*<\/table\>)/iom;
-
-	# POG MODE = OFF
-
-	if (!$string){
-		$address->{status} = 'Error: pattern not found.';
-
-	}else{
-
-		my $tree = HTML::TreeBuilder::XPath->new;
-
-		$string =  decode("iso-8859-1", $string);
-		$tree->parse_content( "<html><body>$string</body></html>" ); # ON AND OFF POG MODE
-
-		my $p = $tree->findnodes( '/html/body/table' )->[0];
+	# thx to gabiru!
+	my $ref = $tree->findnodes('//tr[@onclick=~/detalharCep/]');
 	
-		$address->{street}       = $p->findvalue('//tr[1]/td[1]');
-		$address->{neighborhood} = $p->findvalue('//tr[1]/td[2]');
-		$address->{location}     = $p->findvalue('//tr[1]/td[3]');
-		$address->{uf}           = $p->findvalue('//tr[1]/td[4]');
-		$address->{cep}          = $p->findvalue('//tr[1]/td[5]');
-	
+	while (my $p = shift(@$ref)){
+		my $address = {};
+
+		$address->{street}       = $p->findvalue('./td[1]');
+		$address->{neighborhood} = $p->findvalue('./td[2]');
+		$address->{location}     = $p->findvalue('./td[3]');
+		$address->{uf}           = $p->findvalue('./td[4]');
+		$address->{cep}          = $p->findvalue('./td[5]');
+
 		if ($address->{cep}){
 			$address->{status}       = '';
 		}else{
-			$address->{status}       = 'something is wrong..';
+			$address->{status}       = 'Error: Address not found, something is wrong...';
 		}
+
+		push (@$address_ref, $address);
 	}
 
+	$address_ref->[0]->{status} = 'Error: Address not found' if (!@$address_ref);
 
-	return $address;
+	return 1;
 }
+
 
 sub setTests {
 	die("Tests must be an array ref") unless ref $_[1] eq 'ARRAY' && ref $_[1][0] eq 'HASH';
@@ -236,6 +235,8 @@ You can see details on "Full Sample" below
 
 Recive and CEP and try to get it address returning an hash ref with street, neighborhood, location, uf, cep and status.
 
+If you call this method on an array scope, it returns an array with each address, if not, address_count key is added to the hash.
+
 =head2 $cepper->tests( )
 
 This method make tests on some address for test if WWW::Correios::CEP still ok,
@@ -276,10 +277,14 @@ internal function called on "tests" and "find" methods
 		# theses tests may fail if the Correios page have changed.
 		# Nevertheless, to not break this class when address/cep changes, you can set a your tests here
 		with_tests => [
-			{ street => 'Rua Realidade dos Nordestinos', neighborhood => 'Cidade Nova Heliópolis', location => 'São Paulo'     , uf => 'SP', cep => '04236000' },
-			{ street => 'Rua Rio Piracicaba'           , neighborhood => 'I.A.P.I.'              , location => 'Osasco'        , uf => 'SP', cep => '06236040' },
-			{ street => 'Rua Hugo Baldessarini'        , neighborhood => 'Vista Alegre'          , location => 'Rio de Janeiro', uf => 'RJ', cep => '21236040' },
-			{ street => 'Avenida Urucará'              , neighborhood => 'Cachoeirinha'          , location => 'Manaus'        , uf => 'AM', cep => '69065180' }
+			{ street => 'Rua Realidade dos Nordestinos', neighborhood => 'Cidade Nova Heliópolis',
+				location => 'São Paulo'     , uf => 'SP', cep => '04236000' },
+			{ street => 'Rua Rio Piracicaba'           , neighborhood => 'I.A.P.I.'              ,
+				location => 'Osasco'        , uf => 'SP', cep => '06236040' },
+			{ street => 'Rua Hugo Baldessarini'        , neighborhood => 'Vista Alegre'          ,
+				location => 'Rio de Janeiro', uf => 'RJ', cep => '21236040' },
+			{ street => 'Avenida Urucará'              , neighborhood => 'Cachoeirinha'          ,
+				location => 'Manaus'        , uf => 'AM', cep => '69065180' }
 		],
 		# if you want to change user agent, that defaults to Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)
 		user_agent => 'IECA',
@@ -298,7 +303,10 @@ internal function called on "tests" and "find" methods
 	}else{
 		my $address = $cepper->find( $cep );
 
-		# returns hashref like { street => '', neighborhood => '', location => '', uf => 'SP', cep => '', status => '' }
+		# returns hashref like { street => '', neighborhood => '', location => '', uf => 'SP', cep => '', status => '', address_count => 0 }
+
+		# you can also call find like it:
+		my @address = $cepper->find( $cep );
 
 	}
 
@@ -309,6 +317,7 @@ WWW::Correios::SRO
 =head1 AUTHOR
 
 Renato CRON, E<lt>rentocron@cpan.orgE<gt>
+Special thanks to Gabriel Andrade, E<lt>gabiru</lt> http://search.cpan.org/~gabiru/
 
 =head1 COPYRIGHT AND LICENSE
 

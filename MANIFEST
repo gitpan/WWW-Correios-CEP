@@ -2,6 +2,6 @@ Changes
 lib/WWW/Correios/CEP.pm
 Makefile.PL
 MANIFEST
+META.yml			Module meta-data (added by MakeMaker)
 README
 t/WWW-Correios-CEP.t
-META.yml                                 Module meta-data (added by MakeMaker)
