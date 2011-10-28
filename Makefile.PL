@@ -1,17 +1,60 @@
-use 5.010001;
-use ExtUtils::MakeMaker;
-# See lib/ExtUtils/MakeMaker.pm for details of how to influence
-# the contents of the Makefile that is written.
 
-WriteMakefile(
-    NAME              => 'WWW::Correios::CEP', 
-    VERSION_FROM      => 'lib/WWW/Correios/CEP.pm', 
-    PREREQ_PM         => {
-	 LWP => '0.01',
-	'LWP::UserAgent' => '0.01',
-	'HTML::TreeBuilder::XPath' => '0.01'
-	}, # e.g., Module::Name => 1.1
-	($] >= 5.005 ?     ## Add these new keywords supported since 5.005
-	(ABSTRACT_FROM  => 'lib/WWW/Correios/CEP.pm', # retrieve abstract from module
-	AUTHOR    => 'rentocron <rentocron@cpan.org>') : ()),
+use strict;
+use warnings;
+
+
+
+use ExtUtils::MakeMaker 6.30;
+
+
+
+my %WriteMakefileArgs = (
+  'ABSTRACT' => 'Perl extension for extract address from CEP (zip code) number',
+  'AUTHOR' => 'Renato CRON <rentocron@cpan.org>',
+  'BUILD_REQUIRES' => {
+    'Carp' => '0',
+    'Data::Dumper' => '0',
+    'Scalar::Util' => '0',
+    'Test::More' => '0.94',
+    'perl' => '5.004'
+  },
+  'CONFIGURE_REQUIRES' => {
+    'ExtUtils::MakeMaker' => '6.30'
+  },
+  'DISTNAME' => 'WWW-Correios-CEP',
+  'EXE_FILES' => [],
+  'LICENSE' => 'perl',
+  'NAME' => 'WWW::Correios::CEP',
+  'PREREQ_PM' => {
+    'Encode' => '0',
+    'HTML::TreeBuilder::XPath' => '0',
+    'LWP::UserAgent' => '0',
+    'utf8' => '0'
+  },
+  'VERSION' => '0.03',
+  'test' => {
+    'TESTS' => 't/*.t'
+  }
 );
+
+
+unless ( eval { ExtUtils::MakeMaker->VERSION(6.56) } ) {
+  my $br = delete $WriteMakefileArgs{BUILD_REQUIRES};
+  my $pp = $WriteMakefileArgs{PREREQ_PM};
+  for my $mod ( keys %$br ) {
+    if ( exists $pp->{$mod} ) {
+      $pp->{$mod} = $br->{$mod} if $br->{$mod} > $pp->{$mod};
+    }
+    else {
+      $pp->{$mod} = $br->{$mod};
+    }
+  }
+}
+
+delete $WriteMakefileArgs{CONFIGURE_REQUIRES}
+  unless eval { ExtUtils::MakeMaker->VERSION(6.52) };
+
+WriteMakefile(%WriteMakefileArgs);
+
+
+

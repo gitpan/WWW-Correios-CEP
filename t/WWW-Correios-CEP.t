@@ -8,21 +8,28 @@ use utf8;
 
 use Test::More tests => 3;
 use Data::Dumper;
-BEGIN { use_ok('WWW::Correios::CEP') };
+BEGIN { use_ok('WWW::Correios::CEP') }
 
 #########################
 
 # Insert your test code below, the Test::More module is use()ed here so read
 # its man page ( perldoc Test::More ) for help writing this test script.
 
-
 my $cepper = new WWW::Correios::CEP();
 
-is(ref $cepper, 'WWW::Correios::CEP', 'WWW::Correios::CEP class ok');
+is( ref $cepper, 'WWW::Correios::CEP', 'WWW::Correios::CEP class ok' );
+print STDERR "download...\n";
 
 # i changed to Dumper to easy read erros
-my $got  = Dumper $cepper->find( '03640-000' );
-my $expt = Dumper { street => 'Rua Cupá', neighborhood => 'Vila Carlos de Campos', location => 'São Paulo', uf => 'SP', cep => '03640-000', status => '' };
+my $got  = Dumper $cepper->find('03640-000');
+my $expt = Dumper {
+    street       => 'Rua Cupá',
+    neighborhood => 'Vila Carlos de Campos',
+    location     => 'São Paulo',
+    uf           => 'SP',
+    cep          => '03640-000',
+    status       => ''
+};
 
-is_deeply( $got, $expt, 'testing address for 03640-000');
-
+print STDERR "got $got exp $expt\n";
+is_deeply( $got, $expt, 'testing address for 03640-000' );
