@@ -4,7 +4,7 @@
       "Renato CRON <rentocron@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.200006, CPAN::Meta::Converter version 2.110930",
+   "generated_by" : "Dist::Zilla version 4.300034, CPAN::Meta::Converter version 2.120921",
    "license" : [
       "perl_5"
    ],
@@ -21,19 +21,17 @@
       },
       "runtime" : {
          "requires" : {
-            "Encode" : 0,
-            "HTML::TreeBuilder::XPath" : 0,
-            "LWP::UserAgent" : 0,
-            "utf8" : 0
+            "Encode" : "0",
+            "HTML::TreeBuilder::XPath" : "0",
+            "LWP::UserAgent" : "0",
+            "strict" : "0",
+            "utf8" : "0"
          }
       },
       "test" : {
          "requires" : {
-            "Carp" : 0,
-            "Data::Dumper" : 0,
-            "Scalar::Util" : 0,
-            "Test::More" : "0.94",
-            "perl" : "5.004"
+            "Data::Dumper" : "0",
+            "Test::More" : "0"
          }
       }
    },
@@ -48,6 +46,6 @@
          "web" : "http://github.com/renatocron/WWW--Correios--CEP"
       }
    },
-   "version" : "0.03"
+   "version" : "0.032"
 }
 

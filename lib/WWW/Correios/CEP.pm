@@ -10,7 +10,7 @@ use HTML::TreeBuilder::XPath;
 use Encode;
 use utf8;
 
-our $VERSION = '0.03';
+our $VERSION = '0.032';
 
 #-------------------------------------------------------------------------------
 # Seta configuracao DEFAULT
@@ -28,33 +28,9 @@ sub new {
                 uf           => 'SP',
                 cep          => '04236-000',
                 status       => ''
-            },
-            {
-                street       => 'Rua Rio Piracicaba',
-                neighborhood => 'I.A.P.I.',
-                location     => 'Osasco',
-                uf           => 'SP',
-                cep          => '06236-040',
-                status       => ''
-            },
-            {
-                street       => 'Rua Hugo Baldessarini',
-                neighborhood => 'Vista Alegre',
-                location     => 'Rio de Janeiro',
-                uf           => 'RJ',
-                cep          => '21236-040',
-                status       => ''
-            },
-            {
-                street       => 'Avenida Urucará',
-                neighborhood => 'Cachoeirinha',
-                location     => 'Manaus',
-                uf           => 'AM',
-                cep          => '69065-180',
-                status       => ''
             }
         ],
-        _require_tests => 1,
+        _require_tests => 0,
         _tests_status  => undef,
         _user_agent    => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)',
 
@@ -264,16 +240,16 @@ List of methods
 =head2 new
 
 Create an instance of WWW::Correios::CEP and configures it
-	
+
 Parameters:
 	timeout
-	require_tests 
+	require_tests
 	with_tests
 	user_agent
 	post_url
 	post_content
 	lwp_options
-	
+
 
 You can see details on "Full Sample" below
 
@@ -309,30 +285,24 @@ return current tests array
 =head1 Full Sample
 
 	my $cepper = new WWW::Correios::CEP(
-		# this is default, you can disable it with a explicit false value,
-		require_tests => 1,
-		
+		# this is default, you can enable it with a explicit true value,
+		require_tests => 0,
+
 		lwp_options  => {timeout => 10},
 		timeout      => 30, # 30 sec override 10 sec above, same as user_agent
 		# if you want to change user agent, that defaults to Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)
 		user_agent => 'IECA',
-		
+
 		# theses tests may fail if the Correios page have changed.
 		# Nevertheless, to not break this class when address/cep changes, you can set a your tests here
 		with_tests => [
 			{ street => 'Rua Realidade dos Nordestinos', neighborhood => 'Cidade Nova Heliópolis',
 				location => 'São Paulo'     , uf => 'SP', cep => '04236000' },
-			{ street => 'Rua Rio Piracicaba'           , neighborhood => 'I.A.P.I.'              ,
-				location => 'Osasco'        , uf => 'SP', cep => '06236040' },
-			{ street => 'Rua Hugo Baldessarini'        , neighborhood => 'Vista Alegre'          ,
-				location => 'Rio de Janeiro', uf => 'RJ', cep => '21236040' },
-			{ street => 'Avenida Urucará'              , neighborhood => 'Cachoeirinha'          ,
-				location => 'Manaus'        , uf => 'AM', cep => '69065180' }
 		],
 
 		# if you want to change POST url
 		post_url => 'http://www.buscacep.correios.com.br/servicos/dnec/consultaLogradouroAction.do',
-		
+
 		# if you want to change post content, remenber that "cep number" will be concat on end of this string
 		post_content => 'StartRow=1&EndRow=10&TipoConsulta=relaxation&Metodo=listaLogradouro&relaxation='
 	);
