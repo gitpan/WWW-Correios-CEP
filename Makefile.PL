@@ -30,7 +30,7 @@ my %WriteMakefileArgs = (
     "Data::Dumper" => 0,
     "Test::More" => 0
   },
-  "VERSION" => "0.032",
+  "VERSION" => "0.0322",
   "test" => {
     "TESTS" => "t/*.t"
   }

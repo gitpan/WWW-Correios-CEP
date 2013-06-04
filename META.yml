@@ -23,4 +23,4 @@ requires:
 resources:
   bugtracker: http://github.com/renatocron/WWW--Correios--CEP/issues
   repository: http://renatocron@github.com/renatocron/WWW--Correios--CEP.git
-version: 0.032
+version: 0.0322
