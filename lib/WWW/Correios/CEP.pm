@@ -10,7 +10,7 @@ use HTML::TreeBuilder::XPath;
 use Encode;
 use utf8;
 
-our $VERSION = '0.032';
+our $VERSION = '0.033';
 
 #-------------------------------------------------------------------------------
 # Seta configuracao DEFAULT
@@ -284,7 +284,7 @@ return current tests array
 
 =head1 Full Sample
 
-	my $cepper = new WWW::Correios::CEP(
+	my $cepper = new WWW::Correios::CEP({
 		# this is default, you can enable it with a explicit true value,
 		require_tests => 0,
 
@@ -305,7 +305,7 @@ return current tests array
 
 		# if you want to change post content, remenber that "cep number" will be concat on end of this string
 		post_content => 'StartRow=1&EndRow=10&TipoConsulta=relaxation&Metodo=listaLogradouro&relaxation='
-	);
+	});
 
 	eval{$cepper->tests()};
 	if($@){
@@ -354,11 +354,11 @@ Renato CRON, E<lt>rentocron@cpan.orgE<gt>
 
 =head1 ACKNOWLEDGEMENTS
 
-Special thanks to Gabriel Andrade, E<gabiru>.
+Special thanks to Gabriel Andrade, gabiru.
 
-By a better soluction to found table with address!
+By a better soluction to found table with address, with xpath!
 
-L<scheme:http://search.cpan.org/~gabiru/>
+L<http://search.cpan.org/~gabiru/>
 
 
 =head1 COPYRIGHT AND LICENSE
